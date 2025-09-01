@@ -1,0 +1,42 @@
+services:
+  # Worker: runs the bot
+  - type: worker
+    name: python-bot-worker
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python getbotbook.py"
+    envVars:
+      - key: API_TOKEN
+        sync: false      # set manually in Render
+      - key: ADMIN_ID
+        sync: false      # set manually in Render
+      - key: SPECIAL_PIN
+        value: "2762"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: python-bot-db
+          property: connectionString
+
+  # Web Service: just shows status page
+  - type: web
+    name: python-bot-status
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn getbotbook:app --bind 0.0.0.0:10000"
+    envVars:
+      - key: API_TOKEN
+        sync: false
+      - key: ADMIN_ID
+        sync: false
+      - key: SPECIAL_PIN
+        value: "2762"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: python-bot-db
+          property: connectionString
+
+databases:
+  - name: python-bot-db
+    plan: free
